@@ -1,5 +1,7 @@
-# AmbienceSoundConfig
-A client-side mod to mute ambience sounds in valheim.
+# Ambience Sound Config
+
+A client-side mod that mutes specific ambient sounds in valheim.
+Install BepInEx Config Manager to configure sounds in-game with instant update.
 
 ## Licensing
 
