@@ -30,7 +30,7 @@ or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambien
 1. Install through Thunderstore.
 
 ## ⚙️ Manual Installation
-1. Download the mod from [releases](https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest)
+1. Download the mod from [releases](https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest).
 2. Extract to your BepInEx plugins folder.
 
 ---
