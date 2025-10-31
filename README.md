@@ -1,16 +1,9 @@
+# <p align="center">Ambience Sound Config 🎚️</p>
 <p align="center">
-  <br>
-  # Ambience Sound Config 🎚️
-  **Version:** 2.0.2  
-  **Author:** DraconicVelum
-  <br>
-  <a href="https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest"><img alt="undefined" src="https://img.shields.io/github/release/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
-  <a href="#featured-in"><img alt="undefined" src="https://img.shields.io/github/downloads/DraconicVelum/AmbienceSoundConfig/total.svg?style=popout"></a>
-  <a href="https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE"><img alt="undefined" src="https://img.shields.io/github/license/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
-  <br><br><br>
+<a href="https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest"><img alt="undefined" src="https://img.shields.io/github/release/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
+<a href="#featured-in"><img alt="undefined" src="https://img.shields.io/github/downloads/DraconicVelum/AmbienceSoundConfig/total.svg?style=popout"></a>
+<a href="https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE"><img alt="undefined" src="https://img.shields.io/github/license/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
 </p>
-
----
 
 ## 🌿 Description
 Tame Valheim’s wild ambience!  
@@ -37,7 +30,7 @@ or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambien
 1. Install through Thunderstore.
 
 ## ⚙️ Manual Installation
-1. Download the mod from [<a href="https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest"></a>](releases)
+1. Download the mod from [releases](https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest)
 2. Extract to your BepInEx plugins folder.
 
 ---
