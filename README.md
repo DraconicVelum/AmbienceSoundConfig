@@ -22,7 +22,7 @@ or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambien
 
 ## 🧩 Requirements
 - [BepInExPack for Valheim](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/)
-- (Optional) [BepInEx Configuration Manager](https://thunderstore.io/c/valheim/p/BepInEx/BepInExConfigurationManager/)
+- (Optional) [BepInEx Configuration Manager](https://thunderstore.io/c/valheim/p/Azumatt/Official_BepInEx_ConfigurationManager)
 
 ---
 
