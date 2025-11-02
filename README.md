@@ -15,22 +15,22 @@ This mod adds volume sliders for:
 - 🛡️ Shield hum  
 - 🎚️ Master ambience volume  
 
-Adjust live in-game using the **BepInEx Configuration Manager (F1)**  
+Adjust live in-game on the game audio settings or using the **BepInEx Configuration Manager (F1)**  
 or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambiencesoundconfig.cfg`.
 
 ---
 
 ## 🧩 Requirements
 - [BepInExPack for Valheim](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/)
-- (Optional) [BepInEx Configuration Manager](https://thunderstore.io/c/valheim/p/Azumatt/Official_BepInEx_ConfigurationManager)
+- (Optional) [BepInEx Configuration Manager](https://thunderstore.io/c/valheim/p/BepInEx/BepInExConfigurationManager/)
 
 ---
 
 ## ⚙️ Installation
-1. Install through [Thunderstore](https://thunderstore.io/c/valheim/p/DraconicVelum/AmbienceSoundConfig).
+1. Install through Thunderstore.
 
 ## ⚙️ Manual Installation
-1. Download the mod from [Thunderstore](https://thunderstore.io/c/valheim/p/DraconicVelum/AmbienceSoundConfig) or [releases](https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest).
+1. Download the mod from [releases](https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest).
 2. Extract to your BepInEx plugins folder.
 
 ---
