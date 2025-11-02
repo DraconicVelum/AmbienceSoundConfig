@@ -37,6 +37,6 @@ or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambien
 
 ## Licensing
 
-Licensed under the [GPLv3.0](https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE).
-Feel free to fork it and update as you like, merge request etc.
+Licensed under the [GPLv3.0](https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE).<br>
+Feel free to fork it and update as you like, merge request etc.<br>
 Any ideas are welcome and I will add them if I can, and if I can't I will ask your help too.
