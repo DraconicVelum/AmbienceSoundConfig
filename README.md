@@ -14,7 +14,7 @@ This mod adds volume sliders for:
 - 🎵 Background ambient loop  
 - 🛡️ Shield hum  
 - 🎚️ Master ambience volume
-- ➕ Extra SFX volume (above v2.5.0)
+- ➕ Extra SFX volume (above v2.5.0)<br>
   ↳ Controlled via a comma-separated list of sfx sound names in the config file.
 
 Adjust live in-game on the game audio settings or using the **BepInEx Configuration Manager (F1)**  
