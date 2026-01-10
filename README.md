@@ -15,7 +15,8 @@ This mod adds volume sliders for:
 - 🛡️ Shield hum  
 - 🎚️ Master ambience volume
 - ➕ Extra SFX volume (above v2.5.0)<br>
-  ↳ Controlled via a comma-separated list of sfx sound names in the config file.
+  ↳ Controlled via a comma-separated list of sfx sound names in the config file.<br>
+  (The Extra SFX system should work on all AudioSources, including vanilla, menu, and modded sounds.)
 
 Adjust live in-game on the game audio settings or using the **BepInEx Configuration Manager (F1)**  
 or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambiencesoundconfig.cfg`.
