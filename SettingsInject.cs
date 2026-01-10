@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using System;
 using TMPro;
 using UnityEngine;
@@ -19,12 +19,14 @@ namespace AmbienceSoundConfig
         internal static Slider _sOcean;
         internal static Slider _sAmbientLoop;
         internal static Slider _sShieldHum;
+        internal static Slider _sExtraSfx;
 
         internal static TextMeshProUGUI _vMaster;
         internal static TextMeshProUGUI _vWind;
         internal static TextMeshProUGUI _vOcean;
         internal static TextMeshProUGUI _vAmbientLoop;
         internal static TextMeshProUGUI _vShieldHum;
+        internal static TextMeshProUGUI _vExtraSfx;
 
         [HarmonyPostfix]
         [HarmonyPatch("LoadSettings")]
@@ -116,6 +118,8 @@ namespace AmbienceSoundConfig
 
             CreateOrBind(container, baseSlider, "Shield Hum Volume",
                 ref _sShieldHum, ref _vShieldHum, AmbienceSoundConfig.ShieldHumVolume, (_) => AudioMan_AmbienceVolume_Patch.ApplyShieldHumVolumeWrapper());
+            CreateOrBind(container, baseSlider, "Extra SFX Volume",
+                ref _sExtraSfx, ref _vExtraSfx, AmbienceSoundConfig.ExtraSfxVolume, (_) => { });
         }
 
         internal static void CreateOrBind(
@@ -243,6 +247,11 @@ namespace AmbienceSoundConfig
                 {
                     _sShieldHum.SetValueWithoutNotify(AmbienceSoundConfig.ShieldHumVolume.Value);
                     if (_vShieldHum != null) _vShieldHum.text = $"{Mathf.RoundToInt(_sShieldHum.value * 100f)}%";
+                }
+                if (_sExtraSfx != null)
+                {
+                    _sExtraSfx.SetValueWithoutNotify(AmbienceSoundConfig.ExtraSfxVolume.Value);
+                    if (_vExtraSfx != null) _vExtraSfx.text = $"{Mathf.RoundToInt(_sExtraSfx.value * 100f)}%";
                 }
             }
             catch (Exception ex)
