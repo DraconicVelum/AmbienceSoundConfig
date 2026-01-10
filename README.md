@@ -13,7 +13,9 @@ This mod adds volume sliders for:
 - 🌊 Ocean ambience  
 - 🎵 Background ambient loop  
 - 🛡️ Shield hum  
-- 🎚️ Master ambience volume  
+- 🎚️ Master ambience volume
+- ➕ Extra SFX volume (above v2.5.0)
+  ↳ Controlled via a comma-separated list of sfx sound names in the config file.
 
 Adjust live in-game on the game audio settings or using the **BepInEx Configuration Manager (F1)**  
 or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambiencesoundconfig.cfg`.
