@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using System;
@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AmbienceSoundConfig
 {
-    [BepInPlugin("com.draconicvelum.ambiencesoundconfig", "Ambience Sound Config", "2.4.0")]
+    [BepInPlugin("com.draconicvelum.ambiencesoundconfig", "Ambience Sound Config", "2.5.0")]
     public class AmbienceSoundConfig : BaseUnityPlugin
     {
         public static ConfigEntry<float> MasterVolume;
@@ -14,6 +14,8 @@ namespace AmbienceSoundConfig
         public static ConfigEntry<float> OceanVolume;
         public static ConfigEntry<float> AmbientLoopVolume;
         public static ConfigEntry<float> ShieldHumVolume;
+        public static ConfigEntry<string> ExtraSfxList;
+        public static ConfigEntry<float> ExtraSfxVolume;
 
         private static readonly Harmony harmony = new Harmony("com.draconicvelum.ambiencesoundconfig");
 
@@ -34,12 +36,38 @@ namespace AmbienceSoundConfig
             ShieldHumVolume = Config.Bind("Ambience", "Shield Hum Volume", 1.0f,
                 new ConfigDescription("Volume for shield dome hum (multiplied by Master Volume).", new AcceptableValueRange<float>(0f, 1f)));
 
+            ExtraSfxList = Config.Bind(
+                "Extra SFX",
+                "Extra SFX Prefabs",
+                "",
+                "Comma separated list of ZSFX prefab names affected by Extra SFX Volume."
+            );
+
+            ExtraSfxVolume = Config.Bind(
+                "Extra SFX",
+                "Extra SFX Volume",
+                1.0f,
+                new ConfigDescription(
+                    "Independent volume multiplier for listed sound effects.",
+                    new AcceptableValueRange<float>(0f, 1f)
+                )
+            );
+            ExtraSfxList.SettingChanged += (_, __) => AudioSourceFilter.Refresh();
+            ExtraSfxVolume.SettingChanged += (_, __) =>
+            {
+                foreach (var src in UnityEngine.Object.FindObjectsOfType<AudioSource>())
+                    AudioSourceFilter.Apply(src);
+            };
+            AudioSourceFilter.Refresh();
+
+            harmony.PatchAll(typeof(AudioSource_DoAll_Patch));
+
             harmony.PatchAll(typeof(AudioMan_AmbienceVolume_Patch));
             harmony.PatchAll(typeof(SettingsInject));
 
             Config.ConfigReloaded += OnReloaded;
 
-            Logger.LogInfo("Ambience Sound Config (v2.4.0) loaded. UI inject via SettingsInject (single init, no tab re-inject).");
+            Logger.LogInfo("Ambience Sound Config (v2.5.0) loaded.");
         }
 
         private void OnReloaded(object sender, EventArgs e)
