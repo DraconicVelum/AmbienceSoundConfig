@@ -14,7 +14,7 @@ This mod adds volume sliders for:
 - 🎵 Background ambient loop  
 - 🛡️ Shield hum  
 - 🎚️ Master ambience volume
-- ➕ Extra SFX volume (above v2.5.0, requested by reddit user kalikars)<br>
+- ➕ Extra SFX volume (v2.5.0 and above, requested by reddit user kalikars)<br>
   ↳ Controlled via a comma-separated list of sfx sound names in the config file.<br>
   (The Extra SFX system should work on all AudioSources, including vanilla, menu, and modded sounds.)
 
