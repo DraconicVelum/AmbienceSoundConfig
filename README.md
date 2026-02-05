@@ -14,9 +14,20 @@ This mod adds volume sliders for:
 - 🎵 Background ambient loop  
 - 🛡️ Shield hum  
 - 🎚️ Master ambience volume
-- ➕ Extra SFX volume (v2.5.0 and above, requested by reddit user kalikars)<br>
-  ↳ Controlled via a comma-separated list of sfx sound names in the config file.<br>
-  (The Extra SFX system should work on all AudioSources, including vanilla, menu, and modded sounds.)
+
+### ➕ Advanced sound control (v2.5.0+)
+
+- 🔊 **Extra SFX Volume**  
+  Control specific SFX sources by prefab / object name.  
+  ↳ Configurable via comma-separated SFX names in config.
+
+- 🎧 **Extra Clip Volume** (v2.6.0+)  
+  Control specific AudioClips directly.  
+  ↳ Should work with ZSFX, ambient loops, creature loops, UI sounds, and modded clips.
+
+- 📝 **Optional Sound Logging**  
+  Logs played clips and SFX names to console + file with timestamps.  
+  Useful for discovering names to add to your control lists.
 
 Adjust live in-game on the game audio settings or using the **BepInEx Configuration Manager (F1)**  
 or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambiencesoundconfig.cfg`.
