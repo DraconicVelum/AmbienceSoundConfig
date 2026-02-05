@@ -10,6 +10,7 @@ namespace AmbienceSoundConfig
         [HarmonyPatch(nameof(AudioSource.Play), new System.Type[0])]
         private static void Postfix_Play(AudioSource __instance)
         {
+            SoundPlayLogger.Log("SFX", __instance.gameObject.name, __instance.gameObject);
             AudioSourceFilter.Apply(__instance);
         }
 
