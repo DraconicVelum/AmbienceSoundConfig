@@ -20,6 +20,7 @@ namespace AmbienceSoundConfig
         internal static Slider _sAmbientLoop;
         internal static Slider _sShieldHum;
         internal static Slider _sExtraSfx;
+        internal static Slider _sExtraClip;
 
         internal static TextMeshProUGUI _vMaster;
         internal static TextMeshProUGUI _vWind;
@@ -27,9 +28,10 @@ namespace AmbienceSoundConfig
         internal static TextMeshProUGUI _vAmbientLoop;
         internal static TextMeshProUGUI _vShieldHum;
         internal static TextMeshProUGUI _vExtraSfx;
+        internal static TextMeshProUGUI _vExtraClip;
 
         [HarmonyPostfix]
-        [HarmonyPatch("LoadSettings")]
+        [HarmonyPatch("Initialize")]
         private static void Postfix_LoadSettings(Valheim.SettingsGui.AudioSettings __instance)
         {
             try
@@ -40,13 +42,16 @@ namespace AmbienceSoundConfig
                     return;
                 }
 
-                var baseSlider = __instance.transform.Find("MusicVolume")?.gameObject
-                                 ?? FindDeepChild(__instance.transform, "MusicVolume")?.gameObject;
+                var baseSlider = Traverse.Create(__instance)
+                    .Field("m_musicVolumeSlider")
+                    .GetValue<Slider>()?.gameObject;
+
                 if (baseSlider == null)
                 {
-                    Debug.LogWarning("[AmbienceSoundConfig] Could not locate MusicVolume as base template.");
+                    Debug.LogWarning("[AmbienceSoundConfig] Could not get m_musicVolumeSlider.");
                     return;
                 }
+
 
                 var continous = Traverse.Create(__instance).Field("m_continousMusic").GetValue<Toggle>();
                 Transform parent = continous?.transform.parent ?? baseSlider.transform.parent;
@@ -118,8 +123,12 @@ namespace AmbienceSoundConfig
 
             CreateOrBind(container, baseSlider, "Shield Hum Volume",
                 ref _sShieldHum, ref _vShieldHum, AmbienceSoundConfig.ShieldHumVolume, (_) => AudioMan_AmbienceVolume_Patch.ApplyShieldHumVolumeWrapper());
+
             CreateOrBind(container, baseSlider, "Extra SFX Volume",
-                ref _sExtraSfx, ref _vExtraSfx, AmbienceSoundConfig.ExtraSfxVolume, (_) => { });
+                ref _sExtraSfx, ref _vExtraSfx, AmbienceSoundConfig.ExtraSfxVolume, (_) => AudioSourceFilter.Refresh());
+
+            CreateOrBind(container, baseSlider, "Extra Clip Volume",
+                ref _sExtraClip, ref _vExtraClip, AmbienceSoundConfig.ExtraClipVolume, (_) => AudioSourceFilter.Refresh());
         }
 
         internal static void CreateOrBind(
@@ -252,6 +261,12 @@ namespace AmbienceSoundConfig
                 {
                     _sExtraSfx.SetValueWithoutNotify(AmbienceSoundConfig.ExtraSfxVolume.Value);
                     if (_vExtraSfx != null) _vExtraSfx.text = $"{Mathf.RoundToInt(_sExtraSfx.value * 100f)}%";
+                }
+                if (_sExtraClip != null)
+                {
+                    _sExtraClip.SetValueWithoutNotify(AmbienceSoundConfig.ExtraClipVolume.Value);
+                    if (_vExtraClip != null)
+                        _vExtraClip.text = $"{Mathf.RoundToInt(_sExtraClip.value * 100f)}%";
                 }
             }
             catch (Exception ex)
