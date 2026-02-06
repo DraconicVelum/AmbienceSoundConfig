@@ -21,7 +21,7 @@ This mod adds volume sliders for:
   Control specific SFX sources by prefab / object name.  
   ↳ Configurable via comma-separated SFX names in config.
 
-- 🎧 **Extra Clip Volume** (v2.6.0+)  
+- 🎧 **Extra Clip Volume** (v2.6.8+)  
   Control specific AudioClips directly.  
   ↳ Should work with ZSFX, ambient loops, creature loops, UI sounds, and modded clips.
 
