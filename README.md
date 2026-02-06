@@ -15,9 +15,9 @@ This mod adds volume sliders for:
 - 🛡️ Shield hum  
 - 🎚️ Master ambience volume
 
-### ➕ Advanced sound control (v2.5.0+)
+### ➕ Advanced sound control
 
-- 🔊 **Extra SFX Volume**  
+- 🔊 **Extra SFX Volume** (v2.5.0+)  
   Control specific SFX sources by prefab / object name.  
   ↳ Configurable via comma-separated SFX names in config.
 
