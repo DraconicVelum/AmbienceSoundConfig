@@ -4,12 +4,45 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Valheim;
+using System.Reflection;
 
 namespace AmbienceSoundConfig
 {
-    [HarmonyPatch(typeof(Valheim.SettingsGui.AudioSettings))]
+    [HarmonyPatch]
     public static class SettingsInject
     {
+        static MethodBase TargetMethod()
+        {
+            var type = typeof(Valheim.SettingsGui.AudioSettings);
+
+            MethodBase Find(string name) =>
+                type.GetMethod(
+                    name,
+                    BindingFlags.Instance |
+                    BindingFlags.Public |
+                    BindingFlags.NonPublic
+                );
+
+            var method =
+                Find("Initialize") ??
+                Find("Awake") ??
+                Find("Start");
+
+            if (method != null)
+            {
+                Debug.Log($"[AmbienceSoundConfig] UI inject patching → {method.Name}");
+                return method;
+            }
+
+            method = Find("LoadSettings");
+            if (method != null)
+            {
+                Debug.Log("[AmbienceSoundConfig] UI inject patching → LoadSettings (legacy fallback for Valheim 0.221.4)");
+                return method;
+            }
+
+            throw new Exception("[AmbienceSoundConfig] No compatible AudioSettings method found to patch.");
+        }
         private static Transform _gridContainer;
         private static bool _built = false;
         private const string ContainerName = "AmbienceGridContainer";
@@ -31,7 +64,6 @@ namespace AmbienceSoundConfig
         internal static TextMeshProUGUI _vExtraClip;
 
         [HarmonyPostfix]
-        [HarmonyPatch("Initialize")]
         private static void Postfix_LoadSettings(Valheim.SettingsGui.AudioSettings __instance)
         {
             try
