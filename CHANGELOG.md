@@ -1,5 +1,8 @@
 ## 📝 Changelog
 
+### v2.6.9
+- 🧷 Added legacy fallback hook to LoadSettings for Valheim 0.221.4 compatibility when newer UI init methods are not present.  
+---
 ### v2.6.8
 - 🎚️ Added **Extra Clip Volume** for sound clips.  
 - 🔍 Added optional **sound play logging** to file + console with timestamps.  
