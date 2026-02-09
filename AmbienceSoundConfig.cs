@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AmbienceSoundConfig
 {
-    [BepInPlugin("com.draconicvelum.ambiencesoundconfig", "Ambience Sound Config", "2.6.8")]
+    [BepInPlugin("com.draconicvelum.ambiencesoundconfig", "Ambience Sound Config", "2.6.9")]
     public class AmbienceSoundConfig : BaseUnityPlugin
     {
         public static ConfigEntry<float> MasterVolume;
@@ -113,7 +113,7 @@ namespace AmbienceSoundConfig
             harmony.PatchAll(typeof(SettingsInject));
 
             Config.ConfigReloaded += OnReloaded;
-            Logger.LogInfo("Ambience Sound Config (v2.6.8) loaded.");
+            Logger.LogInfo("Ambience Sound Config (v2.6.9) loaded.");
 
         }
 
