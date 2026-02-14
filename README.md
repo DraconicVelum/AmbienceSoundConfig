@@ -4,6 +4,7 @@
 <a href="https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE"><img alt="undefined" src="https://img.shields.io/github/license/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
 <a href="#featured-in"><img alt="undefined" src="https://img.shields.io/github/downloads/DraconicVelum/AmbienceSoundConfig/total.svg?style=popout"></a></p>
 <p align="center"> <a href="#featured-in"><img alt="undefined" src="https://thunderstore-asc-downloads.draconic-velum.workers.dev"></a>
+<a href="#featured-in"><img alt="undefined" src="https://thunderstore-asc-rating.draconic-velum.workers.dev"></a>
 </p>
 
 ---
