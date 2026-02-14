@@ -1,9 +1,12 @@
 # <p align="center">Ambience Sound Config 🎚️</p>
-<p align="center">
-<a href="https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest"><img alt="undefined" src="https://img.shields.io/github/release/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
-<a href="#featured-in"><img alt="undefined" src="https://img.shields.io/github/downloads/DraconicVelum/AmbienceSoundConfig/total.svg?style=popout"></a>
+
+<p align="center"> <a href="https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest"><img alt="undefined" src="https://img.shields.io/github/release/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
 <a href="https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE"><img alt="undefined" src="https://img.shields.io/github/license/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
+<a href="#featured-in"><img alt="undefined" src="https://img.shields.io/github/downloads/DraconicVelum/AmbienceSoundConfig/total.svg?style=popout"></a></p>
+<p align="center"> <a href="#featured-in"><img alt="undefined" src="https://thunderstore-asc-downloads.draconic-velum.workers.dev"></a>
 </p>
+
+---
 
 ## 🌿 Description
 Tame Valheim’s wild ambience!  
