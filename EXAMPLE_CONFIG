@@ -1,0 +1,104 @@
+## Settings file was created by plugin Ambience Sound Config v2.7.8
+## Plugin GUID: com.draconicvelum.ambiencesoundconfig
+
+[Ambience]
+
+## Controls overall ambience loudness multiplier.
+# Setting type: Single
+# Default value: 0.25
+# Acceptable value range: From 0 to 5
+Master Volume = 1
+
+## Volume for wind ambience (multiplied by Master Volume).
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Wind Volume = 1
+
+## Volume for ocean ambience (multiplied by Master Volume).
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Ocean Volume = 1
+
+## Volume for background ambient loop (multiplied by Master Volume).
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Ambient Loop Volume = 1
+
+## Volume for shield dome hum (multiplied by Master Volume).
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Shield Hum Volume = 1
+
+[Extra Clips]
+
+## Legacy comma separated list of AudioClip names affected by Extra Clip Volume. For per-clip volumes, add entries under [Extra Clips Split].
+# Setting type: String
+# Default value: 
+Extra Clip Names = insect
+
+## Legacy shared volume multiplier for clip names listed in Extra Clip Names.
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Extra Clip Volume = 1
+
+[Extra SFX]
+
+## Legacy comma separated list of ZSFX prefab names affected by Extra SFX Volume. For per-sound volumes, add entries under [Extra SFX Split].
+# Setting type: String
+# Default value: 
+Extra SFX Prefabs = 
+
+## Legacy shared volume multiplier for sound effects listed in Extra SFX Prefabs.
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Extra SFX Volume = 0
+
+[General]
+
+## Internal config version. The mod updates older config files to the latest format while keeping your values.
+# Setting type: String
+# Default value: 2.7.8
+Config Version = 2.7.8
+
+## Button for compatible config manager mods. Reloads this config file and reapplies split SFX/clip volumes.
+# Setting type: Boolean
+# Default value: false
+Reload Config = false
+
+## Config-only maximum value used by this mod's volume sliders and volume config entries. Default is 1.0; valid range is 0.0 to 5.0.
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Volume Slider Max = 1
+
+[Logging]
+
+## Logs all played SFX and AudioClips to console and a file next to this config.
+# Setting type: Boolean
+# Default value: false
+Enable Sound Logging = false
+
+## If enabled, each sound name is logged only once per session.
+# Setting type: Boolean
+# Default value: true
+Log Only Unique = true
+
+[Extra SFX Split]
+## Config-only per-sound SFX volumes. Add one ZSFX prefab per line.
+## Format: prefab_name = volume
+## Example: sfx_boar_idle = 0.25
+
+Amb_MainMenu = 1.0
+
+[Extra Clips Split]
+## Config-only per-clip volumes. Add one AudioClip name per line.
+## Format: clip_name = volume
+## Example: MeadowAmbience = 0.25
+
+Ui_Click_01 = 1.0
