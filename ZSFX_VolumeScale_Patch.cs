@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using UnityEngine;
 
 namespace AmbienceSoundConfig
@@ -23,8 +23,8 @@ namespace AmbienceSoundConfig
 
             float mult = 1f;
 
-            if (AudioSourceFilter.ShouldMuteClip(src.clip))
-                mult = AudioSourceFilter.ClipMultiplier;
+            if (AudioSourceFilter.TryGetClipMultiplier(src.clip, out float clipMult))
+                mult = clipMult;
 
             __instance.SetVolumeModifier(mult <= 0f ? 0f : mult);
         }
