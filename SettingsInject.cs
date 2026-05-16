@@ -157,10 +157,19 @@ namespace AmbienceSoundConfig
                 ref _sShieldHum, ref _vShieldHum, AmbienceSoundConfig.ShieldHumVolume, (_) => AudioMan_AmbienceVolume_Patch.ApplyShieldHumVolumeWrapper());
 
             CreateOrBind(container, baseSlider, "Extra SFX Volume",
-                ref _sExtraSfx, ref _vExtraSfx, AmbienceSoundConfig.ExtraSfxVolume, (_) => AudioSourceFilter.Refresh());
+                ref _sExtraSfx, ref _vExtraSfx, AmbienceSoundConfig.ExtraSfxVolume, (_) =>
+                {
+                    AudioSourceFilter.Refresh();
+                    foreach (var src in UnityEngine.Object.FindObjectsOfType<AudioSource>())
+                        AudioSourceFilter.Apply(src);
+                });
 
             CreateOrBind(container, baseSlider, "Extra Clip Volume",
-                ref _sExtraClip, ref _vExtraClip, AmbienceSoundConfig.ExtraClipVolume, (_) => AudioSourceFilter.Refresh());
+                ref _sExtraClip, ref _vExtraClip, AmbienceSoundConfig.ExtraClipVolume, (_) =>
+                {
+                    AudioSourceFilter.Refresh();
+                    AudioSourceFilter.ApplyToRunningSources();
+                });
         }
 
         internal static void CreateOrBind(
@@ -242,15 +251,16 @@ namespace AmbienceSoundConfig
             }
 
             slider.minValue = 0f;
-            slider.maxValue = 1f;
+            slider.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
             slider.onValueChanged.RemoveAllListeners();
             slider.onValueChanged.AddListener((float val) =>
             {
-                config.Value = val;
-                config.ConfigFile.Save();
+                float clamped = AmbienceSoundConfig.ClampConfiguredVolume(val);
+                config.Value = clamped;
+                AmbienceSoundConfig.SaveConfigPreservingCustomSections(config.ConfigFile);
                 if (valueText != null)
-                    valueText.text = $"{Mathf.RoundToInt(val * 100f)}%";
-                onChanged?.Invoke(val);
+                    valueText.text = $"{Mathf.RoundToInt(clamped * 100f)}%";
+                onChanged?.Invoke(clamped);
             });
 
             sliderRef = slider;
@@ -266,39 +276,45 @@ namespace AmbienceSoundConfig
 
                 if (_sMaster != null)
                 {
+                    _sMaster.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sMaster.SetValueWithoutNotify(AmbienceSoundConfig.MasterVolume.Value);
                     if (_vMaster != null) _vMaster.text = $"{Mathf.RoundToInt(_sMaster.value * 100f)}%";
                 }
                 if (_sWind != null)
                 {
+                    _sWind.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sWind.SetValueWithoutNotify(AmbienceSoundConfig.WindVolume.Value);
                     if (_vWind != null) _vWind.text = $"{Mathf.RoundToInt(_sWind.value * 100f)}%";
                 }
                 if (_sOcean != null)
                 {
+                    _sOcean.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sOcean.SetValueWithoutNotify(AmbienceSoundConfig.OceanVolume.Value);
                     if (_vOcean != null) _vOcean.text = $"{Mathf.RoundToInt(_sOcean.value * 100f)}%";
                 }
                 if (_sAmbientLoop != null)
                 {
+                    _sAmbientLoop.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sAmbientLoop.SetValueWithoutNotify(AmbienceSoundConfig.AmbientLoopVolume.Value);
                     if (_vAmbientLoop != null) _vAmbientLoop.text = $"{Mathf.RoundToInt(_sAmbientLoop.value * 100f)}%";
                 }
                 if (_sShieldHum != null)
                 {
+                    _sShieldHum.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sShieldHum.SetValueWithoutNotify(AmbienceSoundConfig.ShieldHumVolume.Value);
                     if (_vShieldHum != null) _vShieldHum.text = $"{Mathf.RoundToInt(_sShieldHum.value * 100f)}%";
                 }
                 if (_sExtraSfx != null)
                 {
+                    _sExtraSfx.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sExtraSfx.SetValueWithoutNotify(AmbienceSoundConfig.ExtraSfxVolume.Value);
                     if (_vExtraSfx != null) _vExtraSfx.text = $"{Mathf.RoundToInt(_sExtraSfx.value * 100f)}%";
                 }
                 if (_sExtraClip != null)
                 {
+                    _sExtraClip.maxValue = AmbienceSoundConfig.GetVolumeSliderMax();
                     _sExtraClip.SetValueWithoutNotify(AmbienceSoundConfig.ExtraClipVolume.Value);
-                    if (_vExtraClip != null)
-                        _vExtraClip.text = $"{Mathf.RoundToInt(_sExtraClip.value * 100f)}%";
+                    if (_vExtraClip != null) _vExtraClip.text = $"{Mathf.RoundToInt(_sExtraClip.value * 100f)}%";
                 }
             }
             catch (Exception ex)
