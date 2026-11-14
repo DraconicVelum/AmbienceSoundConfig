@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using UnityEngine;
 
 namespace AmbienceSoundConfig
@@ -15,13 +15,17 @@ namespace AmbienceSoundConfig
             if (clip == null)
                 return;
 
+            AudioVolumeController.Apply(__instance);
+
             if (!AudioSourceFilter.HasClipTargets)
                 return;
 
             if (!AudioSourceFilter.TryGetClipMultiplier(clip, out float mult))
                 return;
 
-            volumeScale = mult <= 0f ? 0f : volumeScale * mult;
+            // A matching source.clip has already been scaled by the controller.
+            if (__instance.clip != clip)
+                volumeScale = mult <= 0f ? 0f : volumeScale * mult;
         }
         [HarmonyPrefix]
         [HarmonyPatch(nameof(AudioSource.PlayOneShot), new[] { typeof(AudioClip) })]
