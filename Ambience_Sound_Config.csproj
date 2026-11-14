@@ -13,6 +13,8 @@
     <LangVersion>8.0</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <ValheimManagedPath Condition="'$(ValheimManagedPath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed</ValheimManagedPath>
+    <BepInExCorePath Condition="'$(BepInExCorePath)' == ''">$(APPDATA)\Thunderstore Mod Manager\DataFolder\Valheim\profiles\Pros\BepInEx\core</BepInExCorePath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,15 +35,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>..\..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\Valheim\profiles\Pros\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>$(BepInExCorePath)\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="assembly_valheim">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\assembly_valheim.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\assembly_valheim.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>..\..\..\..\AppData\Roaming\Thunderstore Mod Manager\DataFolder\Valheim\profiles\Pros\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>$(BepInExCorePath)\BepInEx.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -53,51 +55,59 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.AnimationModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.AudioModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Valheim\Valheim_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(ValheimManagedPath)\UnityEngine.UIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmbienceSoundConfig.cs" />
+    <Compile Include="ConfigFileMaintenance.cs" />
+    <Compile Include="SoundSettings.cs" />
+    <Compile Include="SoundChannels.cs" />
+    <Compile Include="AudioMenuLayout.cs" />
+    <Compile Include="AudioTextFocus.cs" />
+    <Compile Include="ComponentAudioOwnership_Patch.cs" />
+    <Compile Include="BoatControlAudio_Patch.cs" />
     <Compile Include="AudioMan_AmbienceVolume_Patch.cs" />
     <Compile Include="AudioSourceFilter.cs" />
-    <Compile Include="AudioSource_DoAll_Patch.cs" />
+    <Compile Include="AudioVolumeController.cs" />
+    <Compile Include="AudioSource_Play_Patch.cs" />
     <Compile Include="AudioSource_PlayOneShotScale_Patch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsInject.cs" />
@@ -106,3 +116,4 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
+
