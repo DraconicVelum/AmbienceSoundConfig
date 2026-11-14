@@ -1,5 +1,12 @@
 ## Changelog
 
+### v2.9.9
+- Fixed unrelated audio sources accumulating in the per-frame volume update set.
+- Cached sound classification and volume multipliers instead of repeating hierarchy searches and name matching on every update.
+- Removed the per-frame audio sweep with background maintenance every 100 ms.
+- Reduced fallback scene scans from twice per second to once every five seconds.
+- Avoided rewriting unchanged volumes and rescanning unchanged boat and Shield Generator sound hierarchies.
+
 ### v2.9.8
 - Updated audio hooks for Valheim 1.0, preserving ambient transitions and fades.
 - Improved Ocean and Ambient Loop coverage, including shore waves and ocean background loops.
