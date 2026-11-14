@@ -15,10 +15,10 @@ namespace AmbienceSoundConfig
             if (src == null || src.clip == null)
                 return;
 
-            if (src.isPlaying)
+            if (SoundPlayLogger.Enabled && src.isPlaying)
                 SoundPlayLogger.Log("ZSFX", src.clip.name, __instance.gameObject);
 
-            SoundPlayLogger.Log("SFX", __instance.gameObject.name, __instance.gameObject);
+            if (SoundPlayLogger.Enabled) SoundPlayLogger.Log("SFX", __instance.gameObject.name, __instance.gameObject);
             AudioVolumeController.Apply(src);
         }
     }
