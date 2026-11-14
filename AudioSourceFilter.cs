@@ -14,15 +14,21 @@ namespace AmbienceSoundConfig
         private static readonly Dictionary<string, float> _clipTargets =
             new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
 
-        private static readonly Dictionary<AudioSource, float> _baseVolume =
-            new Dictionary<AudioSource, float>();
-
         internal static bool HasClipTargets => _clipTargets.Count > 0;
 
         internal static void Refresh()
         {
             _nameTargets.Clear();
             _clipTargets.Clear();
+
+            if (SoundSettings.IsInitialized)
+            {
+                foreach (var row in SoundSettings.GetRows(false))
+                    if (!string.IsNullOrWhiteSpace(row.Name.Value)) _nameTargets[Normalize(row.Name.Value)] = row.Volume.Value;
+                foreach (var row in SoundSettings.GetRows(true))
+                    if (!string.IsNullOrWhiteSpace(row.Name.Value)) _clipTargets[Normalize(row.Name.Value)] = row.Volume.Value;
+                return;
+            }
 
             ParseSharedList(AmbienceSoundConfig.ExtraSfxList.Value, AmbienceSoundConfig.ExtraSfxVolume.Value, _nameTargets);
             ParseConfigVolumeSection(AmbienceSoundConfig.ExtraSfxSplitSection, _nameTargets);
@@ -31,27 +37,7 @@ namespace AmbienceSoundConfig
             ParseConfigVolumeSection(AmbienceSoundConfig.ExtraClipSplitSection, _clipTargets);
         }
 
-        internal static void Apply(AudioSource src)
-        {
-            if (src == null || _nameTargets.Count == 0)
-                return;
-
-            if (!TryGetSfxMultiplier(src.gameObject.name, out float mult))
-                return;
-
-            ApplyVolume(src, mult);
-        }
-
-        internal static void Apply(AudioSource src, ref float volume)
-        {
-            if (src == null || _nameTargets.Count == 0)
-                return;
-
-            if (!TryGetSfxMultiplier(src.gameObject.name, out float mult))
-                return;
-
-            volume = Scale(volume, mult);
-        }
+        internal static void Apply(AudioSource src) => AudioVolumeController.Apply(src);
 
         internal static bool ShouldMuteClip(AudioClip clip)
         {
@@ -61,76 +47,23 @@ namespace AmbienceSoundConfig
         internal static bool TryGetClipMultiplier(AudioClip clip, out float multiplier)
         {
             multiplier = 1f;
-            return clip != null && TryMatch(_clipTargets, clip.name, out multiplier);
+            bool match = clip != null && TryMatch(_clipTargets, clip.name, out multiplier);
+            if (match && SoundSettings.IsInitialized) multiplier *= AmbienceSoundConfig.ExtraClipVolume.Value;
+            return match;
         }
 
         internal static void ApplyToRunningSources()
         {
-            var dead = new List<AudioSource>();
-            foreach (var kv in _baseVolume)
-                if (kv.Key == null)
-                    dead.Add(kv.Key);
-
-            foreach (var d in dead)
-                _baseVolume.Remove(d);
-
-            foreach (var src in UnityEngine.Object.FindObjectsOfType<AudioSource>())
-            {
-                if (src == null || src.clip == null)
-                    continue;
-
-                float mult = 1f;
-                bool match = HasClipTargets && TryGetClipMultiplier(src.clip, out mult);
-
-                if (!match)
-                {
-                    if (_baseVolume.ContainsKey(src))
-                        _baseVolume.Remove(src);
-
-                    src.mute = false;
-                    continue;
-                }
-
-                if (!_baseVolume.ContainsKey(src))
-                    _baseVolume[src] = src.volume;
-
-                float baseVol = _baseVolume[src];
-
-                if (mult <= 0f)
-                {
-                    src.mute = true;
-                }
-                else
-                {
-                    src.mute = false;
-                    src.volume = Mathf.Clamp01(baseVol * mult);
-                }
-            }
+            foreach (var source in UnityEngine.Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
+                AudioVolumeController.Apply(source);
         }
 
-        private static bool TryGetSfxMultiplier(string goName, out float multiplier)
+        internal static bool TryGetSfxMultiplier(string goName, out float multiplier)
         {
-            return TryMatch(_nameTargets, goName, out multiplier);
+            bool match = TryMatch(_nameTargets, goName, out multiplier);
+            if (match && SoundSettings.IsInitialized) multiplier *= AmbienceSoundConfig.ExtraSfxVolume.Value;
+            return match;
         }
-
-        private static void ApplyVolume(AudioSource src, float mult)
-        {
-            if (mult <= 0f)
-            {
-                src.mute = true;
-                return;
-            }
-
-            src.mute = false;
-            src.volume = Mathf.Clamp01(src.volume * mult);
-        }
-
-        private static float Scale(float v, float mult)
-        {
-            if (mult <= 0f) return 0f;
-            return v * mult;
-        }
-
         private static bool TryMatch(Dictionary<string, float> targets, string sourceName, out float multiplier)
         {
             multiplier = 1f;
@@ -143,17 +76,21 @@ namespace AmbienceSoundConfig
             if (targets.TryGetValue(name, out multiplier))
                 return true;
 
+            int longest = -1;
             foreach (var target in targets)
             {
                 if (name.StartsWith(target.Key, StringComparison.OrdinalIgnoreCase) ||
                     name.IndexOf(target.Key, StringComparison.OrdinalIgnoreCase) >= 0)
                 {
-                    multiplier = target.Value;
-                    return true;
+                    if (target.Key.Length > longest)
+                    {
+                        multiplier = target.Value;
+                        longest = target.Key.Length;
+                    }
                 }
             }
 
-            return false;
+            return longest >= 0;
         }
 
         private static void ParseSharedList(string raw, float sharedVolume, Dictionary<string, float> target)
@@ -241,3 +178,5 @@ namespace AmbienceSoundConfig
         }
     }
 }
+
+
