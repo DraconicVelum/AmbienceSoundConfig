@@ -1,6 +1,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace AmbienceSoundConfig
@@ -11,6 +12,25 @@ namespace AmbienceSoundConfig
     internal static class ComponentAudioOwnership_Patch
     {
         private static readonly FieldInfo LowLoops = AccessTools.Field(typeof(ShieldGenerator), "m_lowLoopInstances");
+        private sealed class ShipRegistration
+        {
+            internal GameObject Rudder;
+            internal EffectList Effects;
+        }
+        private sealed class ShieldRegistration
+        {
+            internal bool Initialized;
+            internal GameObject Enabled, Disabled;
+            internal readonly List<GameObject> LowLoops = new List<GameObject>();
+        }
+        private static ConditionalWeakTable<Ship, ShipRegistration> Ships = new ConditionalWeakTable<Ship, ShipRegistration>();
+        private static ConditionalWeakTable<ShieldGenerator, ShieldRegistration> Shields = new ConditionalWeakTable<ShieldGenerator, ShieldRegistration>();
+
+        internal static void Reset()
+        {
+            Ships = new ConditionalWeakTable<Ship, ShipRegistration>();
+            Shields = new ConditionalWeakTable<ShieldGenerator, ShieldRegistration>();
+        }
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
@@ -27,8 +47,17 @@ namespace AmbienceSoundConfig
             if (__instance is ShipEffects ship) RegisterShip(ship);
             if (__instance is Ship boat)
             {
-                RegisterRoot(boat.m_rudderObject, AudioVolumeController.OwnerCategory.Boat, false, SoundChannel.BoatRudder);
-                BoatControlAudio_Patch.RegisterEffects(boat.m_changeSailPosEffect);
+                if (!Ships.TryGetValue(boat, out var registration)) { registration = new ShipRegistration(); Ships.Add(boat, registration); }
+                if (!ReferenceEquals(registration.Rudder, boat.m_rudderObject))
+                {
+                    registration.Rudder = boat.m_rudderObject;
+                    RegisterRoot(boat.m_rudderObject, AudioVolumeController.OwnerCategory.Boat, false, SoundChannel.BoatRudder);
+                }
+                if (!ReferenceEquals(registration.Effects, boat.m_changeSailPosEffect))
+                {
+                    registration.Effects = boat.m_changeSailPosEffect;
+                    BoatControlAudio_Patch.RegisterEffects(boat.m_changeSailPosEffect);
+                }
             }
         }
 
@@ -36,13 +65,26 @@ namespace AmbienceSoundConfig
         {
             if (__instance is ShieldGenerator generator)
             {
-                RegisterRoot(generator.gameObject, AudioVolumeController.OwnerCategory.Shield, true);
-                RegisterRoot(generator.m_enabledObject, AudioVolumeController.OwnerCategory.Shield, true);
-                RegisterRoot(generator.m_disabledObject, AudioVolumeController.OwnerCategory.Shield, true);
+                if (!Shields.TryGetValue(generator, out var registration)) { registration = new ShieldRegistration(); Shields.Add(generator, registration); }
+                if (!registration.Initialized) RegisterRoot(generator.gameObject, AudioVolumeController.OwnerCategory.Shield, true);
+                if (!registration.Initialized || !ReferenceEquals(registration.Enabled, generator.m_enabledObject))
+                    RegisterRoot(generator.m_enabledObject, AudioVolumeController.OwnerCategory.Shield, true);
+                if (!registration.Initialized || !ReferenceEquals(registration.Disabled, generator.m_disabledObject))
+                    RegisterRoot(generator.m_disabledObject, AudioVolumeController.OwnerCategory.Shield, true);
+                registration.Initialized = true;
+                registration.Enabled = generator.m_enabledObject;
+                registration.Disabled = generator.m_disabledObject;
                 var instances = LowLoops?.GetValue(generator) as GameObject[];
-                if (instances != null)
-                    foreach (var root in instances)
-                        RegisterRoot(root, AudioVolumeController.OwnerCategory.Shield, true, SoundChannel.ShieldLowFuel);
+                int count = instances != null ? instances.Length : 0;
+                for (int index = 0; index < count; index++)
+                {
+                    var root = instances[index];
+                    if (index < registration.LowLoops.Count && ReferenceEquals(registration.LowLoops[index], root)) continue;
+                    RegisterRoot(root, AudioVolumeController.OwnerCategory.Shield, true, SoundChannel.ShieldLowFuel);
+                    if (index < registration.LowLoops.Count) registration.LowLoops[index] = root;
+                    else registration.LowLoops.Add(root);
+                }
+                if (registration.LowLoops.Count > count) registration.LowLoops.RemoveRange(count, registration.LowLoops.Count - count);
             }
         }
 
