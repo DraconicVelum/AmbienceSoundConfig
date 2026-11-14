@@ -1,69 +1,50 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace AmbienceSoundConfig
 {
-    [HarmonyPatch(typeof(AudioMan))]
+    // Redirect managed volume reads and writes: fades must see the unscaled volume.
+    [HarmonyPatch]
     public static class AudioMan_AmbienceVolume_Patch
     {
-        private static readonly BindingFlags Flags = BindingFlags.Instance | BindingFlags.NonPublic;
-        private static readonly Dictionary<string, FieldInfo> CachedFields = new Dictionary<string, FieldInfo>();
-
-        private static AudioSource GetPrivateSource(string fieldName)
+        private static IEnumerable<MethodBase> TargetMethods()
         {
-            if (AudioMan.instance == null)
-                return null;
+            yield return AccessTools.Method(typeof(AudioMan), "Awake");
+            yield return AccessTools.Method(typeof(AudioMan), "UpdateWindAmbience");
+            yield return AccessTools.Method(typeof(AudioMan), "UpdateOceanAmbiance");
+            yield return AccessTools.Method(typeof(AudioMan), "UpdateAmbientLoop");
+            yield return AccessTools.Method(typeof(ShipEffects), "Awake");
+            yield return AccessTools.Method(typeof(ShipEffects), "FadeSound");
+            yield return AccessTools.Method(typeof(ZSFX), "Play");
+            yield return AccessTools.Method(typeof(ZSFX), "CustomUpdate");
+        }
 
-            if (!CachedFields.TryGetValue(fieldName, out var field))
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var getter = AccessTools.PropertyGetter(typeof(AudioSource), "volume");
+            var setter = AccessTools.PropertySetter(typeof(AudioSource), "volume");
+            foreach (var instruction in instructions)
             {
-                field = typeof(AudioMan).GetField(fieldName, Flags);
-                if (field != null)
-                    CachedFields[fieldName] = field;
+                if (instruction.Calls(getter))
+                {
+                    instruction.opcode = OpCodes.Call;
+                    instruction.operand = AccessTools.Method(typeof(AudioVolumeController), nameof(AudioVolumeController.GetGameVolume));
+                }
+                else if (instruction.Calls(setter))
+                {
+                    instruction.opcode = OpCodes.Call;
+                    instruction.operand = AccessTools.Method(typeof(AudioVolumeController), nameof(AudioVolumeController.SetGameVolume));
+                }
+                yield return instruction;
             }
-
-            return field?.GetValue(AudioMan.instance) as AudioSource;
         }
 
-        public static void ApplyWindVolumeWrapper()
-        {
-            var src = GetPrivateSource("m_windLoopSource");
-            if (src != null)
-                src.volume = AmbienceSoundConfig.WindVolume.Value * AmbienceSoundConfig.MasterVolume.Value;
-        }
-
-        public static void ApplyOceanVolumeWrapper()
-        {
-            var src = GetPrivateSource("m_oceanAmbientSource");
-            if (src != null)
-                src.volume = AmbienceSoundConfig.OceanVolume.Value * AmbienceSoundConfig.MasterVolume.Value;
-        }
-
-        public static void ApplyAmbientLoopVolumeWrapper()
-        {
-            var src = GetPrivateSource("m_ambientLoopSource");
-            if (src != null)
-                src.volume = AmbienceSoundConfig.AmbientLoopVolume.Value * AmbienceSoundConfig.MasterVolume.Value;
-        }
-
-        public static void ApplyShieldHumVolumeWrapper()
-        {
-            var src = GetPrivateSource("m_shieldHumSource");
-            if (src != null)
-                src.volume = AmbienceSoundConfig.ShieldHumVolume.Value * AmbienceSoundConfig.MasterVolume.Value;
-        }
-
-        [HarmonyPostfix, HarmonyPatch("UpdateWindAmbience")]
-        public static void ApplyWindVolume(ref AudioSource ___m_windLoopSource) => ApplyWindVolumeWrapper();
-
-        [HarmonyPostfix, HarmonyPatch("UpdateOceanAmbiance")]
-        public static void ApplyOceanVolume(ref AudioSource ___m_oceanAmbientSource) => ApplyOceanVolumeWrapper();
-
-        [HarmonyPostfix, HarmonyPatch("UpdateAmbientLoop")]
-        public static void ApplyAmbientLoopVolume(ref AudioSource ___m_ambientLoopSource) => ApplyAmbientLoopVolumeWrapper();
-
-        [HarmonyPostfix, HarmonyPatch("UpdateShieldHum")]
-        public static void ApplyShieldHumVolume(ref AudioSource ___m_shieldHumSource) => ApplyShieldHumVolumeWrapper();
+        public static void ApplyWindVolumeWrapper() => AudioVolumeController.Refresh();
+        public static void ApplyOceanVolumeWrapper() => AudioVolumeController.Refresh();
+        public static void ApplyAmbientLoopVolumeWrapper() => AudioVolumeController.Refresh();
+        public static void ApplyShieldHumVolumeWrapper() => AudioVolumeController.Refresh();
     }
 }
