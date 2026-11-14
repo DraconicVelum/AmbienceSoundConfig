@@ -9,7 +9,9 @@ namespace AmbienceSoundConfig
     internal static class BoatControlAudio_Patch
     {
         private sealed class BoatEffect { }
-        private static readonly ConditionalWeakTable<EffectList, BoatEffect> Effects = new ConditionalWeakTable<EffectList, BoatEffect>();
+        private static ConditionalWeakTable<EffectList, BoatEffect> Effects = new ConditionalWeakTable<EffectList, BoatEffect>();
+
+        internal static void Reset() => Effects = new ConditionalWeakTable<EffectList, BoatEffect>();
 
         internal static void RegisterEffects(EffectList effects)
         {
