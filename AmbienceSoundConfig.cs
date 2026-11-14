@@ -3,7 +3,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using System;
 using System.IO;
-using System.Text;
+using static AmbienceSoundConfig.ConfigFileMaintenance;
 using UnityEngine;
 
 namespace AmbienceSoundConfig
@@ -11,15 +11,15 @@ namespace AmbienceSoundConfig
     [BepInPlugin("com.draconicvelum.ambiencesoundconfig", "Ambience Sound Config", AmbienceSoundConfig.PluginVersion)]
     public class AmbienceSoundConfig : BaseUnityPlugin
     {
-        public const string PluginVersion = "2.7.8";
+        public const string PluginVersion = "2.9.8";
         public const string ExtraSfxSplitSection = "Extra SFX Split";
         public const string ExtraClipSplitSection = "Extra Clips Split";
         public static ConfigEntry<string> ConfigVersion;
         public static ConfigEntry<bool> ReloadConfigButton;
         public static ConfigEntry<float> VolumeSliderMax;
-        public static ConfigEntry<float> MasterVolume;
         public static ConfigEntry<float> WindVolume;
         public static ConfigEntry<float> OceanVolume;
+        public static ConfigEntry<float> BoatVolume;
         public static ConfigEntry<float> AmbientLoopVolume;
         public static ConfigEntry<float> ShieldHumVolume;
         public static ConfigEntry<string> ExtraSfxList;
@@ -32,10 +32,16 @@ namespace AmbienceSoundConfig
 
 
         private static readonly Harmony harmony = new Harmony("com.draconicvelum.ambiencesoundconfig");
+        private bool configDirty;
+        private bool audioConfigDirty;
+        private float saveConfigAt;
 
         private void Awake()
         {
             PluginConfigFilePath = Config.ConfigFilePath;
+            // Bind and clamp everything before writing. BepInEx otherwise saves
+            // each Bind/Value change, before custom sections can be preserved.
+            Config.SaveOnConfigSet = false;
             var startupCustomSections = CustomSectionSnapshot.Capture(PluginConfigFilePath);
             string fileConfigVersion = ReadConfigVersion();
             bool configNeedsUpdate = IsOlderConfigVersion(fileConfigVersion, PluginVersion);
@@ -57,20 +63,19 @@ namespace AmbienceSoundConfig
             VolumeSliderMax = Config.Bind("General", "Volume Slider Max", 1.0f,
                 new ConfigDescription("Config-only maximum value used by this mod's volume sliders and volume config entries. Default is 1.0; valid range is 0.0 to 5.0.", new AcceptableValueRange<float>(0f, 5f)));
 
-            MasterVolume = Config.Bind("Ambience", "Master Volume", 0.25f,
-                new ConfigDescription("Controls overall ambience loudness multiplier.", new AcceptableValueRange<float>(0f, 5f)));
-
             WindVolume = Config.Bind("Ambience", "Wind Volume", 1.0f,
-                new ConfigDescription("Volume for wind ambience (multiplied by Master Volume).", new AcceptableValueRange<float>(0f, 5f)));
+                new ConfigDescription("Volume for wind ambience.", new AcceptableValueRange<float>(0f, 5f)));
 
             OceanVolume = Config.Bind("Ambience", "Ocean Volume", 1.0f,
-                new ConfigDescription("Volume for ocean ambience (multiplied by Master Volume).", new AcceptableValueRange<float>(0f, 5f)));
+                new ConfigDescription("Multiplier for ocean ambience and shore/wave loops. Ocean background loops also use Ambient Loop Volume. Boat sounds use Boat Volume.", new AcceptableValueRange<float>(0f, 5f)));
+
+            BoatVolume = ConfigFileMaintenance.BindBoatVolume(Config, OceanVolume.Value);
 
             AmbientLoopVolume = Config.Bind("Ambience", "Ambient Loop Volume", 1.0f,
-                new ConfigDescription("Volume for background ambient loop (multiplied by Master Volume).", new AcceptableValueRange<float>(0f, 5f)));
+                new ConfigDescription("Multiplier for background ambient loops and Amb_MainMenu, preserving biome transitions and fades.", new AcceptableValueRange<float>(0f, 5f)));
 
             ShieldHumVolume = Config.Bind("Ambience", "Shield Hum Volume", 1.0f,
-                new ConfigDescription("Volume for shield dome hum (multiplied by Master Volume).", new AcceptableValueRange<float>(0f, 5f)));
+                new ConfigDescription("Multiplier for shield dome hum and Shield Generator loops, including low-fuel loops. Does not affect one-shot impacts or fuel interactions.", new AcceptableValueRange<float>(0f, 5f)));
 
             ExtraSfxList = Config.Bind(
                 "Extra SFX",
@@ -120,19 +125,35 @@ namespace AmbienceSoundConfig
                 "If enabled, each sound name is logged only once per session."
             );
 
+            if (IsOlderConfigVersion(fileConfigVersion, "2.8.1"))
+            {
+                startupCustomSections = startupCustomSections.WithoutMainMenuOverride();
+                ExtraSfxList.Value = ConfigFileMaintenance.RemoveMainMenuFromSharedList(ExtraSfxList.Value);
+            }
+
+            SoundSettings.Initialize(Config, GetVolumeSliderMax, MarkConfigDirty,
+                ExtraSfxList, ExtraSfxVolume, ExtraClipList, ExtraClipVolume,
+                IsOlderConfigVersion(fileConfigVersion, "2.8.1"));
+            SoundSettings.RemoveLegacyMaster();
+            if (SoundSettings.MigratedLegacy) startupCustomSections = CustomSectionSnapshot.Empty;
+            // Legacy comma-list keys are import-only; row entries replace them.
+            Config.Remove(ExtraSfxList.Definition);
+            Config.Remove(ExtraClipList.Definition);
+
             VolumeSliderMax.SettingChanged += (_, __) =>
             {
                 ClampAllVolumeConfigs();
+                SoundSettings.ClampAll();
                 AudioSourceFilter.Refresh();
                 AudioSourceFilter.ApplyToRunningSources();
                 ApplyAllVolumes();
                 SettingsInject.SyncUI();
-                SaveConfigPreservingCustomSections(Config);
+                MarkConfigDirty();
             };
 
-            MasterVolume.SettingChanged += (_, __) => ClampVolumeConfig(MasterVolume);
             WindVolume.SettingChanged += (_, __) => ClampVolumeConfig(WindVolume);
             OceanVolume.SettingChanged += (_, __) => ClampVolumeConfig(OceanVolume);
+            BoatVolume.SettingChanged += (_, __) => ClampVolumeConfig(BoatVolume);
             AmbientLoopVolume.SettingChanged += (_, __) => ClampVolumeConfig(AmbientLoopVolume);
             ShieldHumVolume.SettingChanged += (_, __) => ClampVolumeConfig(ShieldHumVolume);
 
@@ -140,9 +161,6 @@ namespace AmbienceSoundConfig
             ExtraSfxVolume.SettingChanged += (_, __) =>
             {
                 ClampVolumeConfig(ExtraSfxVolume);
-                AudioSourceFilter.Refresh();
-                foreach (var src in UnityEngine.Object.FindObjectsOfType<AudioSource>())
-                    AudioSourceFilter.Apply(src);
             };
 
             ExtraClipList.SettingChanged += (_, __) =>
@@ -154,8 +172,6 @@ namespace AmbienceSoundConfig
             ExtraClipVolume.SettingChanged += (_, __) =>
             {
                 ClampVolumeConfig(ExtraClipVolume);
-                AudioSourceFilter.Refresh();
-                AudioSourceFilter.ApplyToRunningSources();
             };
 
             ClampAllVolumeConfigs();
@@ -164,20 +180,66 @@ namespace AmbienceSoundConfig
             AudioSourceFilter.Refresh();
             SoundPlayLogger.Init(Config);
 
-            harmony.PatchAll(typeof(AudioSource_DoAll_Patch));
+            harmony.PatchAll(typeof(AudioSource_Play_Patch));
             harmony.PatchAll(typeof(AudioSource_PlayOneShotScale_Patch));
             harmony.PatchAll(typeof(ZSFX_VolumeScale_Patch));
             harmony.PatchAll(typeof(AudioMan_AmbienceVolume_Patch));
+            harmony.PatchAll(typeof(ComponentAudioOwnership_Patch));
+            harmony.PatchAll(typeof(BoatControlAudio_Patch));
             harmony.PatchAll(typeof(SettingsInject));
+            harmony.PatchAll(typeof(AudioSettingsNavigation_Patch));
+            harmony.PatchAll(typeof(AudioTextFocus_Patch));
 
             Config.ConfigReloaded += OnReloaded;
+            Config.SettingChanged += OnSettingChanged;
             Logger.LogInfo($"Ambience Sound Config (v{PluginVersion}) loaded.");
 
+        }
+
+        private void OnSettingChanged(object sender, SettingChangedEventArgs e) => MarkConfigDirty();
+
+        private void MarkConfigDirty()
+        {
+            configDirty = audioConfigDirty = true;
+            saveConfigAt = Time.unscaledTime + .35f;
+        }
+
+        private void LateUpdate()
+        {
+            if (audioConfigDirty)
+            {
+                audioConfigDirty = false;
+                SoundSettings.ClampAll();
+                AudioSourceFilter.Refresh();
+            }
+            AudioVolumeController.Tick();
+            SettingsInject.Tick();
+            if (configDirty && Time.unscaledTime >= saveConfigAt)
+            {
+                SaveConfigPreservingCustomSections(Config);
+                configDirty = false;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            SettingsInject.Cleanup();
+            Config.ConfigReloaded -= OnReloaded;
+            Config.SettingChanged -= OnSettingChanged;
+            if (configDirty) SaveConfigPreservingCustomSections(Config);
+            harmony.UnpatchSelf();
+            AudioVolumeController.Restore();
+            SoundSettings.Reset();
         }
 
         private void OnReloaded(object sender, EventArgs e)
         {
             ClampAllVolumeConfigs();
+            SoundSettings.Reload();
+            SoundSettings.RemoveLegacyMaster();
+            if (IsOlderConfigVersion(ConfigVersion.Value, PluginVersion))
+                ConfigVersion.Value = PluginVersion;
+            MarkConfigDirty();
             EnsureCustomVolumeSections();
             AudioSourceFilter.Refresh();
             AudioSourceFilter.ApplyToRunningSources();
@@ -211,10 +273,7 @@ namespace AmbienceSoundConfig
 
         public static void ApplyAllVolumes()
         {
-            AudioMan_AmbienceVolume_Patch.ApplyWindVolumeWrapper();
-            AudioMan_AmbienceVolume_Patch.ApplyOceanVolumeWrapper();
-            AudioMan_AmbienceVolume_Patch.ApplyAmbientLoopVolumeWrapper();
-            AudioMan_AmbienceVolume_Patch.ApplyShieldHumVolumeWrapper();
+            AudioVolumeController.Refresh();
         }
 
         public static float GetVolumeSliderMax()
@@ -236,9 +295,9 @@ namespace AmbienceSoundConfig
 
         private static void ClampAllVolumeConfigs()
         {
-            ClampVolumeConfig(MasterVolume);
             ClampVolumeConfig(WindVolume);
             ClampVolumeConfig(OceanVolume);
+            ClampVolumeConfig(BoatVolume);
             ClampVolumeConfig(AmbientLoopVolume);
             ClampVolumeConfig(ShieldHumVolume);
             ClampVolumeConfig(ExtraSfxVolume);
@@ -252,16 +311,7 @@ namespace AmbienceSoundConfig
 
             try
             {
-                foreach (var rawLine in File.ReadAllLines(PluginConfigFilePath))
-                {
-                    string line = rawLine.Trim();
-                    if (!line.StartsWith("Config Version =", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    int separator = line.IndexOf('=');
-                    if (separator >= 0)
-                        return line.Substring(separator + 1).Trim();
-                }
+                return ConfigFileMaintenance.ReadConfigValue(PluginConfigFilePath, "General", "Config Version");
             }
             catch (Exception ex)
             {
@@ -271,30 +321,14 @@ namespace AmbienceSoundConfig
             return null;
         }
 
-        private static bool IsOlderConfigVersion(string currentVersion, string targetVersion)
-        {
-            if (string.IsNullOrEmpty(currentVersion))
-                return File.Exists(PluginConfigFilePath);
-
-            if (!Version.TryParse(currentVersion, out var current))
-                return true;
-
-            if (!Version.TryParse(targetVersion, out var target))
-                return false;
-
-            return current < target;
-        }
-
         private void UpdateConfigFileIfNeeded(bool configNeedsUpdate, CustomSectionSnapshot startupCustomSections)
         {
-            if (!configNeedsUpdate)
-                return;
-
             try
             {
-                ConfigVersion.Value = PluginVersion;
+                if (configNeedsUpdate) ConfigVersion.Value = PluginVersion;
                 SaveConfigPreservingCustomSections(Config, startupCustomSections);
-                Logger.LogInfo($"Updated config file to v{PluginVersion} while keeping existing values.");
+                if (configNeedsUpdate)
+                    Logger.LogInfo($"Updated config file to v{PluginVersion} while keeping existing values.");
             }
             catch (Exception ex)
             {
@@ -302,231 +336,6 @@ namespace AmbienceSoundConfig
             }
         }
 
-        internal static void EnsureCustomVolumeSections()
-        {
-            if (string.IsNullOrEmpty(PluginConfigFilePath))
-                return;
-
-            try
-            {
-                if (!File.Exists(PluginConfigFilePath))
-                    return;
-
-                string text = RemoveLegacyEntryLines(File.ReadAllText(PluginConfigFilePath));
-                bool changed = text != File.ReadAllText(PluginConfigFilePath);
-                var builder = new StringBuilder(text.TrimEnd());
-
-                if (!HasSection(text, ExtraSfxSplitSection))
-                {
-                    AppendExtraSfxSplitSection(builder);
-                    changed = true;
-                }
-
-                if (!HasSection(text, ExtraClipSplitSection))
-                {
-                    AppendExtraClipsSplitSection(builder);
-                    changed = true;
-                }
-
-                if (changed)
-                    File.WriteAllText(PluginConfigFilePath, builder.ToString() + Environment.NewLine);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[AmbienceSoundConfig] Could not seed custom volume config sections: " + ex.Message);
-            }
-        }
-
-        internal static void SaveConfigPreservingCustomSections(ConfigFile config)
-        {
-            SaveConfigPreservingCustomSections(config, CustomSectionSnapshot.Capture(PluginConfigFilePath));
-        }
-
-        private static void SaveConfigPreservingCustomSections(ConfigFile config, CustomSectionSnapshot snapshot)
-        {
-            config.Save();
-            snapshot.Restore(PluginConfigFilePath);
-            EnsureCustomVolumeSections();
-        }
-
-        private static void ReloadConfigPreservingCustomSections(ConfigFile config)
-        {
-            var snapshot = CustomSectionSnapshot.Capture(PluginConfigFilePath);
-            config.Reload();
-            snapshot.Restore(PluginConfigFilePath);
-            EnsureCustomVolumeSections();
-        }
-
-        private static void AppendExtraSfxSplitSection(StringBuilder builder)
-        {
-            builder.AppendLine();
-            builder.AppendLine();
-            builder.AppendLine($"[{ExtraSfxSplitSection}]");
-            builder.AppendLine("## Config-only per-sound SFX volumes. Add one ZSFX prefab per line.");
-            builder.AppendLine("## Format: prefab_name = volume");
-            builder.AppendLine("## Example: sfx_boar_idle = 0.25");
-        }
-
-        private static void AppendExtraClipsSplitSection(StringBuilder builder)
-        {
-            builder.AppendLine();
-            builder.AppendLine();
-            builder.AppendLine($"[{ExtraClipSplitSection}]");
-            builder.AppendLine("## Config-only per-clip volumes. Add one AudioClip name per line.");
-            builder.AppendLine("## Format: clip_name = volume");
-            builder.AppendLine("## Example: MeadowAmbience = 0.25");
-        }
-
-        private static string RemoveLegacyEntryLines(string text)
-        {
-            var builder = new StringBuilder();
-            using (var reader = new StringReader(text))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string trimmed = line.TrimStart();
-                    if (trimmed.StartsWith("Extra SFX Entries =", StringComparison.OrdinalIgnoreCase) ||
-                        trimmed.StartsWith("Extra Clip Entries =", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    builder.AppendLine(line);
-                }
-            }
-
-            return builder.ToString().TrimEnd() + Environment.NewLine;
-        }
-
-        private static string ReadRawSection(string text, string sectionName)
-        {
-            var builder = new StringBuilder();
-            bool inSection = false;
-
-            using (var reader = new StringReader(text))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string trimmed = line.Trim();
-                    if (trimmed.StartsWith("[") && trimmed.EndsWith("]"))
-                    {
-                        if (inSection)
-                            break;
-
-                        string current = trimmed.Substring(1, trimmed.Length - 2).Trim();
-                        inSection = current.Equals(sectionName, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (inSection)
-                        builder.AppendLine(line);
-                }
-            }
-
-            return builder.Length > 0 ? builder.ToString().TrimEnd() + Environment.NewLine : null;
-        }
-
-        private static string RemoveSection(string text, string sectionName)
-        {
-            var builder = new StringBuilder();
-            bool skip = false;
-
-            using (var reader = new StringReader(text))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    string trimmed = line.Trim();
-                    if (trimmed.StartsWith("[") && trimmed.EndsWith("]"))
-                    {
-                        string current = trimmed.Substring(1, trimmed.Length - 2).Trim();
-                        skip = current.Equals(sectionName, StringComparison.OrdinalIgnoreCase);
-                    }
-
-                    if (!skip)
-                        builder.AppendLine(line);
-                }
-            }
-
-            return builder.ToString();
-        }
-
-        private static bool HasSection(string text, string sectionName)
-        {
-            using (var reader = new StringReader(text))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    line = line.Trim();
-                    if (!line.StartsWith("[") || !line.EndsWith("]"))
-                        continue;
-
-                    string current = line.Substring(1, line.Length - 2).Trim();
-                    if (current.Equals(sectionName, StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
-            }
-
-            return false;
-        }
-
-        private sealed class CustomSectionSnapshot
-        {
-            private readonly string _extraSfxSplit;
-            private readonly string _extraClipsSplit;
-
-            private CustomSectionSnapshot(string extraSfxSplit, string extraClipsSplit)
-            {
-                _extraSfxSplit = extraSfxSplit;
-                _extraClipsSplit = extraClipsSplit;
-            }
-
-            internal static CustomSectionSnapshot Capture(string path)
-            {
-                if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                    return new CustomSectionSnapshot(null, null);
-
-                string text = File.ReadAllText(path);
-                return new CustomSectionSnapshot(
-                    ReadRawSection(text, ExtraSfxSplitSection),
-                    ReadRawSection(text, ExtraClipSplitSection)
-                );
-            }
-
-            internal void Restore(string path)
-            {
-                if (string.IsNullOrEmpty(path) || !File.Exists(path))
-                    return;
-
-                string text = File.ReadAllText(path);
-
-                if (!string.IsNullOrWhiteSpace(_extraSfxSplit))
-                    text = RemoveSection(text, ExtraSfxSplitSection);
-
-                if (!string.IsNullOrWhiteSpace(_extraClipsSplit))
-                    text = RemoveSection(text, ExtraClipSplitSection);
-
-                var builder = new StringBuilder(text.TrimEnd());
-
-                if (!string.IsNullOrWhiteSpace(_extraSfxSplit))
-                {
-                    builder.AppendLine();
-                    builder.AppendLine();
-                    builder.Append(_extraSfxSplit.TrimEnd());
-                }
-
-                if (!string.IsNullOrWhiteSpace(_extraClipsSplit))
-                {
-                    builder.AppendLine();
-                    builder.AppendLine();
-                    builder.Append(_extraClipsSplit.TrimEnd());
-                }
-
-                File.WriteAllText(path, builder.ToString() + Environment.NewLine);
-            }
-        }
 
     }
 }
@@ -542,3 +351,6 @@ namespace BepInEx.ConfigurationManager
         public bool? HideDefaultButton;
     }
 }
+
+
+
