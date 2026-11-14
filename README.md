@@ -4,68 +4,70 @@
 <a href="#featured-in"><img alt="downloads" src="https://img.shields.io/github/downloads/DraconicVelum/AmbienceSoundConfig/total.svg?style=popout"></a>
 <a href="https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE"><img alt="license" src="https://img.shields.io/github/license/DraconicVelum/AmbienceSoundConfig.svg?style=popout"></a>
 </p>
+<hr>
 
 ## Description
+
 Tame Valheim's wild ambience.
 
-This mod adds volume sliders for:
+| Category | Individual sound controls |
+| --- | --- |
+| Wind Volume | Wind ambience |
+| Ocean Volume | Distant ocean, shore and wave sounds, ocean background ambience |
+| Boat Volume | Water against the hull, wake while sailing, sails, boat splashes |
+| Ambient Loop Volume | Biome and weather ambience, main menu ambience |
+| Shield Hum Volume | Shield dome hum, generator hum, low-fuel hum |
+| Extra SFX Volume | Custom sounds matched by prefab or object name |
+| Extra Clip Volume | Custom sounds matched by AudioClip name |
 
-- Wind ambience
-- Ocean ambience
-- Background ambient loop
-- Shield hum
-- Master ambience volume
+Expand a category to adjust its individual sounds. Built-in sound controls are available. Each category has a **Mute/Unmute** button that restores its last positive volume, plus a reset button for its individual sound levels.
+
+Ocean background ambience is affected by both **Ocean Volume** and **Ambient Loop Volume**.
 
 ### Advanced sound control
 
-- **Extra SFX Volume** (v2.5.0+)
-  Control specific SFX sources by prefab / object name.
-  Configurable with comma-separated SFX names in config.
+Expand **Extra SFX Volume** or **Extra Clip Volume** and click **Add sound**. Each row contains a sound name, its own volume slider and an **X** button to remove it. Finish editing the name to apply it.
 
-- **Extra Clip Volume** (v2.6.8+)
-  Control specific AudioClips directly.
-  Should work with ZSFX, ambient loops, creature loops, UI sounds, and modded clips.
+- **Extra SFX** matches prefab or object names; **Extra Clip** matches AudioClip names.
+- Each category's main volume multiplies the volumes of its individual rows.
+- Blank rows do not affect audio; duplicate names in the same list are rejected.
+- **Reset levels** restores the individual row volumes.
+- Q/E tab navigation is blocked while an Extra name field is being edited or selected.
 
-- **Split SFX and Clip Volumes** (v2.7.8+)
-  Add one sound per line in the config-only split sections:
+Enable **Enable Sound Logging** to discover SFX and clip names. Names are written to the console and `AmbienceSoundConfig_SoundLog.txt` next to the config file. **Log Only Unique** avoids repeated entries.
 
-```ini
-[Extra SFX Split]
-Amb_MainMenu = 0.0
+### Configuration
 
-[Extra Clips Split]
-Ui_Click_01 = 0.1
-```
+Adjust volumes live in the game's audio settings or through the optional **BepInEx Configuration Manager (F1)**. Changes are saved automatically; consecutive slider changes are grouped to reduce disk writes.
 
-- **Optional Sound Logging**
-  Logs played clips and SFX names to console and file with timestamps.
-  Useful for discovering names to add to your control lists.
+The config file is `BepInEx/config/com.draconicvelum.ambiencesoundconfig.cfg`. Individual built-in settings use the `Sounds - Wind/Ocean/Boat/Ambient/Shield` sections. Custom rows use `Extra SFX Rows` and `Extra Clips Rows` with stable row identifiers, names, volumes and ordering.
 
-Adjust live in-game on the game audio settings or using the **BepInEx Configuration Manager (F1)**,
-or edit your `.cfg` file manually under `BepInEx/config/com.draconicvelum.ambiencesoundconfig.cfg`.
+**Volume Slider Max** sets the maximum for this mod's sliders. It defaults to `1.0` (100%) and can be configured from `0.0` to `5.0`.
 
-There is also a **Reload Config** button for compatible config manager mods.
-Use it after editing the split sections while the game is running.
+After editing the config file while the game is running, use **Reload Config** in a compatible config manager. Existing config values are preserved when upgrading. A backup ending in `.pre-2.9.0.bak` is created when legacy Extra settings are first converted to rows.
 
 ---
 
 ## Requirements
+
 - [BepInExPack for Valheim](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/)
 - (Optional) [BepInEx Configuration Manager](https://thunderstore.io/c/valheim/p/BepInEx/BepInExConfigurationManager/)
 
 ---
 
 ## Installation
+
 1. Install through Thunderstore.
 
 ## Manual Installation
+
 1. Download the mod from [releases](https://github.com/DraconicVelum/AmbienceSoundConfig/releases/latest).
 2. Extract to your BepInEx plugins folder.
+
+When updating manually, replace the previous `AmbienceSoundConfig.dll` and restart the game. Keep only one copy of the plugin installed.
 
 ---
 
 ## Licensing
 
-Licensed under the [GPLv3.0](https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE).<br>
-Feel free to fork it and update as you like, pull requests etc.<br>
-Any ideas are welcome and I will add them if I can, and if I can't I will ask your help too.
+Licensed under the [GPLv3.0](https://github.com/DraconicVelum/AmbienceSoundConfig/blob/main/LICENSE).
