@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepInEx.Configuration;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,7 @@ namespace AmbienceSoundConfig
             new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private static string _logPath;
+        internal static bool Enabled => AmbienceSoundConfig.EnableSoundLogging != null && AmbienceSoundConfig.EnableSoundLogging.Value;
 
         internal static void Init(ConfigFile config)
         {
@@ -30,7 +31,7 @@ namespace AmbienceSoundConfig
 
         internal static void Log(string type, string name, GameObject go = null)
         {
-            if (!AmbienceSoundConfig.EnableSoundLogging.Value)
+            if (!Enabled)
                 return;
 
             if (string.IsNullOrEmpty(name))
