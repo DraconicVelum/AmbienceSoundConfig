@@ -1,44 +1,39 @@
-## Settings file was created by plugin Ambience Sound Config v2.7.8
+## Settings file was created by plugin Ambience Sound Config v2.9.8
 ## Plugin GUID: com.draconicvelum.ambiencesoundconfig
 
 [Ambience]
 
-## Controls overall ambience loudness multiplier.
-# Setting type: Single
-# Default value: 0.25
-# Acceptable value range: From 0 to 5
-Master Volume = 1
-
-## Volume for wind ambience (multiplied by Master Volume).
+## Volume for wind ambience.
 # Setting type: Single
 # Default value: 1
 # Acceptable value range: From 0 to 5
 Wind Volume = 1
 
-## Volume for ocean ambience (multiplied by Master Volume).
+## Multiplier for ocean ambience and shore/wave loops. Ocean background loops also use Ambient Loop Volume. Boat sounds use Boat Volume.
 # Setting type: Single
 # Default value: 1
 # Acceptable value range: From 0 to 5
 Ocean Volume = 1
 
-## Volume for background ambient loop (multiplied by Master Volume).
+## Multiplier for boat water, wake, sails, sail crank, rudder audio and looping splashes. Independent of Ocean Volume.
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Boat Volume = 1
+
+## Multiplier for background ambient loops and Amb_MainMenu, preserving biome transitions and fades.
 # Setting type: Single
 # Default value: 1
 # Acceptable value range: From 0 to 5
 Ambient Loop Volume = 1
 
-## Volume for shield dome hum (multiplied by Master Volume).
+## Multiplier for shield dome hum and Shield Generator loops, including low-fuel loops. Does not affect one-shot impacts or fuel interactions.
 # Setting type: Single
 # Default value: 1
 # Acceptable value range: From 0 to 5
 Shield Hum Volume = 1
 
 [Extra Clips]
-
-## Legacy comma separated list of AudioClip names affected by Extra Clip Volume. For per-clip volumes, add entries under [Extra Clips Split].
-# Setting type: String
-# Default value: 
-Extra Clip Names = insect
 
 ## Legacy shared volume multiplier for clip names listed in Extra Clip Names.
 # Setting type: Single
@@ -48,23 +43,18 @@ Extra Clip Volume = 1
 
 [Extra SFX]
 
-## Legacy comma separated list of ZSFX prefab names affected by Extra SFX Volume. For per-sound volumes, add entries under [Extra SFX Split].
-# Setting type: String
-# Default value: 
-Extra SFX Prefabs = 
-
 ## Legacy shared volume multiplier for sound effects listed in Extra SFX Prefabs.
 # Setting type: Single
 # Default value: 1
 # Acceptable value range: From 0 to 5
-Extra SFX Volume = 0
+Extra SFX Volume = 1
 
 [General]
 
 ## Internal config version. The mod updates older config files to the latest format while keeping your values.
 # Setting type: String
-# Default value: 2.7.8
-Config Version = 2.7.8
+# Default value: 2.9.8
+Config Version = 2.9.8
 
 ## Button for compatible config manager mods. Reloads this config file and reapplies split SFX/clip volumes.
 # Setting type: Boolean
@@ -76,6 +66,11 @@ Reload Config = false
 # Default value: 1
 # Acceptable value range: From 0 to 5
 Volume Slider Max = 1
+
+## Internal version of the expandable per-sound controls.
+# Setting type: Int32
+# Default value: 0
+Sound Rows Version = 1
 
 [Logging]
 
@@ -89,16 +84,90 @@ Enable Sound Logging = false
 # Default value: true
 Log Only Unique = true
 
-[Extra SFX Split]
-## Config-only per-sound SFX volumes. Add one ZSFX prefab per line.
-## Format: prefab_name = volume
-## Example: sfx_boar_idle = 0.25
+[Sounds - Ambient]
 
-Amb_MainMenu = 1.0
+## Individual multiplier: Biome and weather ambience
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogQW1iaWVudEJhY2tncm91bmQ = 1
 
-[Extra Clips Split]
-## Config-only per-clip volumes. Add one AudioClip name per line.
-## Format: clip_name = volume
-## Example: MeadowAmbience = 0.25
+## Individual multiplier: Main menu ambience
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogTWFpbk1lbnU = 1
 
-Ui_Click_01 = 1.0
+[Sounds - Boat]
+
+## Individual multiplier: Water against the hull
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogQm9hdFdhdGVy = 1
+
+## Individual multiplier: Wake while sailing
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogQm9hdFdha2U = 1
+
+## Individual multiplier: Sails
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogQm9hdFNhaWxz = 1
+
+## Individual multiplier: Boat splashes
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogQm9hdFNwbGFzaA = 1
+
+[Sounds - Ocean]
+
+## Individual multiplier: Distant ocean
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogT2NlYW4 = 1
+
+## Individual multiplier: Shore and wave sounds
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogU2hvcmVXYXZlcw = 1
+
+## Individual multiplier: Ocean background ambience
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogT2NlYW5CYWNrZ3JvdW5k = 1
+
+[Sounds - Shield]
+
+## Individual multiplier: Shield dome hum
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogU2hpZWxkRG9tZQ = 1
+
+## Individual multiplier: Generator hum
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogU2hpZWxkR2VuZXJhdG9y = 1
+
+## Individual multiplier: Low fuel hum
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogU2hpZWxkTG93RnVlbA = 1
+
+[Sounds - Wind]
+
+## Individual multiplier: Wind ambience
+# Setting type: Single
+# Default value: 1
+# Acceptable value range: From 0 to 5
+Q29udHJvbDogV2luZA = 1
