@@ -10,7 +10,7 @@ namespace AmbienceSoundConfig
         [HarmonyPatch(nameof(AudioSource.PlayOneShot), new[] { typeof(AudioClip), typeof(float) })]
         private static void Prefix(AudioSource __instance, AudioClip clip, ref float volumeScale)
         {
-            SoundPlayLogger.Log("CLIP", clip?.name, __instance ? __instance.gameObject : null);
+            if (SoundPlayLogger.Enabled) SoundPlayLogger.Log("CLIP", clip?.name, __instance ? __instance.gameObject : null);
 
             if (clip == null)
                 return;
@@ -31,7 +31,7 @@ namespace AmbienceSoundConfig
         [HarmonyPatch(nameof(AudioSource.PlayOneShot), new[] { typeof(AudioClip) })]
         private static void Prefix_NoScale(AudioSource __instance, AudioClip clip)
         {
-            SoundPlayLogger.Log("CLIP", clip?.name, __instance ? __instance.gameObject : null);
+            if (SoundPlayLogger.Enabled) SoundPlayLogger.Log("CLIP", clip?.name, __instance ? __instance.gameObject : null);
         }
     }
 }
