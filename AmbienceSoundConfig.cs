@@ -11,7 +11,7 @@ namespace AmbienceSoundConfig
     [BepInPlugin("com.draconicvelum.ambiencesoundconfig", "Ambience Sound Config", AmbienceSoundConfig.PluginVersion)]
     public class AmbienceSoundConfig : BaseUnityPlugin
     {
-        public const string PluginVersion = "2.9.8";
+        public const string PluginVersion = "2.9.9";
         public const string ExtraSfxSplitSection = "Extra SFX Split";
         public const string ExtraClipSplitSection = "Extra Clips Split";
         public static ConfigEntry<string> ConfigVersion;
@@ -211,6 +211,7 @@ namespace AmbienceSoundConfig
                 audioConfigDirty = false;
                 SoundSettings.ClampAll();
                 AudioSourceFilter.Refresh();
+                AudioVolumeController.Refresh();
             }
             AudioVolumeController.Tick();
             SettingsInject.Tick();
@@ -229,6 +230,8 @@ namespace AmbienceSoundConfig
             if (configDirty) SaveConfigPreservingCustomSections(Config);
             harmony.UnpatchSelf();
             AudioVolumeController.Restore();
+            ComponentAudioOwnership_Patch.Reset();
+            BoatControlAudio_Patch.Reset();
             SoundSettings.Reset();
         }
 
