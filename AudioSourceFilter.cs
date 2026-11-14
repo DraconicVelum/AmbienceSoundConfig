@@ -18,6 +18,7 @@ namespace AmbienceSoundConfig
 
         internal static void Refresh()
         {
+            AudioVolumeController.Invalidate();
             _nameTargets.Clear();
             _clipTargets.Clear();
 
