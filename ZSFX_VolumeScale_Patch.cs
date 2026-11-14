@@ -7,12 +7,9 @@ namespace AmbienceSoundConfig
     internal static class ZSFX_VolumeScale_Patch
     {
         [HarmonyPostfix]
-        [HarmonyPatch(nameof(ZSFX.CustomUpdate))]
+        [HarmonyPatch(nameof(ZSFX.Play))]
         private static void Postfix(ZSFX __instance)
         {
-            if (!AudioSourceFilter.HasClipTargets)
-                return;
-
             var src = __instance.GetComponent<AudioSource>();
 
             if (src == null || src.clip == null)
@@ -21,12 +18,8 @@ namespace AmbienceSoundConfig
             if (src.isPlaying)
                 SoundPlayLogger.Log("ZSFX", src.clip.name, __instance.gameObject);
 
-            float mult = 1f;
-
-            if (AudioSourceFilter.TryGetClipMultiplier(src.clip, out float clipMult))
-                mult = clipMult;
-
-            __instance.SetVolumeModifier(mult <= 0f ? 0f : mult);
+            SoundPlayLogger.Log("SFX", __instance.gameObject.name, __instance.gameObject);
+            AudioVolumeController.Apply(src);
         }
     }
 }
